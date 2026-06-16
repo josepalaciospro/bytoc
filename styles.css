@@ -106,9 +106,18 @@ body {
 .drag-handle:active { cursor: grabbing; }
 .drag-handle:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 
-.card.dragging {
-  opacity: 0.9;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+.card.is-chosen {
+  cursor: grabbing;
+}
+.card.is-ghost {
+  opacity: 0.4;
+  background: var(--bg);
+  border-style: dashed;
+}
+.card.is-drag {
+  box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+  transform: scale(1.02);
+  cursor: grabbing;
 }
 
 .card-text {

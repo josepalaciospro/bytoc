@@ -1,9 +1,10 @@
-const CACHE = "byetoc-v1";
+const CACHE = "byetoc-v2";
 const ASSETS = [
   ".",
   "index.html",
   "styles.css",
   "app.js",
+  "sortable.min.js",
   "manifest.webmanifest",
   "icon-192.png",
   "icon-512.png",

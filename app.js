@@ -176,7 +176,6 @@ function render() {
     handle.className = "drag-handle";
     handle.textContent = "⠿";
     handle.setAttribute("aria-label", "Reordenar (flechas arriba y abajo)");
-    handle.addEventListener("pointerdown", (e) => onHandlePointerDown(e, s.id));
     handle.addEventListener("keydown", (e) => {
       if (e.key === "ArrowUp") { e.preventDefault(); moveSwitch(s.id, -1); }
       else if (e.key === "ArrowDown") { e.preventDefault(); moveSwitch(s.id, 1); }
@@ -265,61 +264,27 @@ function renderHistory(s) {
 
 /* ---------- Reordenar ---------- */
 
-let dragEl = null;
-let dragHandleEl = null;
+let sortable = null;
 
-function onHandlePointerDown(e, id) {
-  if (e.pointerType === "mouse" && e.button !== 0) return;
-  dragHandleEl = e.currentTarget;
-  dragEl = dragHandleEl.closest(".card");
-  if (!dragEl) return;
-  dragEl.classList.add("dragging");
-  dragHandleEl.setPointerCapture(e.pointerId);
-  dragHandleEl.addEventListener("pointermove", onPointerMove);
-  dragHandleEl.addEventListener("pointerup", onPointerUp);
-  dragHandleEl.addEventListener("pointercancel", onPointerUp);
-  e.preventDefault();
+function initSortable() {
+  if (sortable || typeof Sortable === "undefined") return;
+  sortable = Sortable.create(listEl, {
+    handle: ".drag-handle",
+    animation: 170,
+    easing: "cubic-bezier(0.2, 0, 0, 1)",
+    forceFallback: true,
+    fallbackTolerance: 4,
+    chosenClass: "is-chosen",
+    ghostClass: "is-ghost",
+    dragClass: "is-drag",
+    onEnd: commitOrder
+  });
 }
 
-function onPointerMove(e) {
-  if (!dragEl) return;
-  const after = getDragAfter(e.clientY);
-  if (after == null) {
-    listEl.appendChild(dragEl);
-  } else if (after !== dragEl) {
-    listEl.insertBefore(dragEl, after);
-  }
-}
-
-function getDragAfter(y) {
-  const cards = Array.from(listEl.querySelectorAll(".card:not(.dragging)"));
-  let closest = null;
-  let closestOffset = Number.NEGATIVE_INFINITY;
-  for (const card of cards) {
-    const box = card.getBoundingClientRect();
-    const offset = y - (box.top + box.height / 2);
-    if (offset < 0 && offset > closestOffset) {
-      closestOffset = offset;
-      closest = card;
-    }
-  }
-  return closest;
-}
-
-function onPointerUp() {
-  if (dragEl) {
-    dragEl.classList.remove("dragging");
-    const order = Array.from(listEl.querySelectorAll(".card")).map((c) => c.dataset.id);
-    switches.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-    save();
-  }
-  if (dragHandleEl) {
-    dragHandleEl.removeEventListener("pointermove", onPointerMove);
-    dragHandleEl.removeEventListener("pointerup", onPointerUp);
-    dragHandleEl.removeEventListener("pointercancel", onPointerUp);
-  }
-  dragEl = null;
-  dragHandleEl = null;
+function commitOrder() {
+  const order = Array.from(listEl.querySelectorAll(".card")).map((c) => c.dataset.id);
+  switches.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  save();
 }
 
 function moveSwitch(id, dir) {
@@ -390,3 +355,4 @@ if ("serviceWorker" in navigator) {
 
 load();
 render();
+initSortable();
