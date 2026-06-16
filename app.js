@@ -166,9 +166,21 @@ function render() {
   for (const s of switches) {
     const card = document.createElement("section");
     card.className = "card";
+    card.dataset.id = s.id;
 
     const main = document.createElement("div");
     main.className = "card-main";
+
+    const handle = document.createElement("button");
+    handle.type = "button";
+    handle.className = "drag-handle";
+    handle.textContent = "⠿";
+    handle.setAttribute("aria-label", "Reordenar (flechas arriba y abajo)");
+    handle.addEventListener("pointerdown", (e) => onHandlePointerDown(e, s.id));
+    handle.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") { e.preventDefault(); moveSwitch(s.id, -1); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); moveSwitch(s.id, 1); }
+    });
 
     const text = document.createElement("div");
     text.className = "card-text";
@@ -195,7 +207,7 @@ function render() {
     sw.appendChild(thumb);
     sw.addEventListener("click", () => toggle(s.id));
 
-    main.append(text, sw);
+    main.append(handle, text, sw);
 
     const actions = document.createElement("div");
     actions.className = "card-actions";
@@ -249,6 +261,77 @@ function renderHistory(s) {
   }
   box.appendChild(ul);
   return box;
+}
+
+/* ---------- Reordenar ---------- */
+
+let dragEl = null;
+let dragHandleEl = null;
+
+function onHandlePointerDown(e, id) {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  dragHandleEl = e.currentTarget;
+  dragEl = dragHandleEl.closest(".card");
+  if (!dragEl) return;
+  dragEl.classList.add("dragging");
+  dragHandleEl.setPointerCapture(e.pointerId);
+  dragHandleEl.addEventListener("pointermove", onPointerMove);
+  dragHandleEl.addEventListener("pointerup", onPointerUp);
+  dragHandleEl.addEventListener("pointercancel", onPointerUp);
+  e.preventDefault();
+}
+
+function onPointerMove(e) {
+  if (!dragEl) return;
+  const after = getDragAfter(e.clientY);
+  if (after == null) {
+    listEl.appendChild(dragEl);
+  } else if (after !== dragEl) {
+    listEl.insertBefore(dragEl, after);
+  }
+}
+
+function getDragAfter(y) {
+  const cards = Array.from(listEl.querySelectorAll(".card:not(.dragging)"));
+  let closest = null;
+  let closestOffset = Number.NEGATIVE_INFINITY;
+  for (const card of cards) {
+    const box = card.getBoundingClientRect();
+    const offset = y - (box.top + box.height / 2);
+    if (offset < 0 && offset > closestOffset) {
+      closestOffset = offset;
+      closest = card;
+    }
+  }
+  return closest;
+}
+
+function onPointerUp() {
+  if (dragEl) {
+    dragEl.classList.remove("dragging");
+    const order = Array.from(listEl.querySelectorAll(".card")).map((c) => c.dataset.id);
+    switches.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+    save();
+  }
+  if (dragHandleEl) {
+    dragHandleEl.removeEventListener("pointermove", onPointerMove);
+    dragHandleEl.removeEventListener("pointerup", onPointerUp);
+    dragHandleEl.removeEventListener("pointercancel", onPointerUp);
+  }
+  dragEl = null;
+  dragHandleEl = null;
+}
+
+function moveSwitch(id, dir) {
+  const i = switches.findIndex((s) => s.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= switches.length) return;
+  const [moved] = switches.splice(i, 1);
+  switches.splice(j, 0, moved);
+  save();
+  render();
+  const h = listEl.querySelector(`.card[data-id="${id}"] .drag-handle`);
+  if (h) h.focus();
 }
 
 /* ---------- Eventos globales ---------- */

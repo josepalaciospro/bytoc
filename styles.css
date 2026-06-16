@@ -91,6 +91,26 @@ body {
   gap: 12px;
 }
 
+.drag-handle {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--track-off);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 2px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.drag-handle:active { cursor: grabbing; }
+.drag-handle:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.card.dragging {
+  opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+}
+
 .card-text {
   flex: 1;
   min-width: 0;
