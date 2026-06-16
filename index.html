@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2b2b2b" />
+  <meta name="description" content="Registro personal de interruptores con marca temporal. Offline." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>ByeTOC</title>
+</head>
+<body>
+  <header class="topbar">
+    <h1>ByeTOC</h1>
+    <button id="install" type="button" hidden>Instalar app</button>
+  </header>
+
+  <main id="list" class="list" aria-live="polite"></main>
+
+  <p id="empty" class="empty" hidden>Sin interruptores. Crea el primero abajo.</p>
+
+  <div class="composer">
+    <label class="visually-hidden" for="new-label">Nombre del interruptor</label>
+    <input id="new-label" type="text" inputmode="text" autocomplete="off"
+           placeholder="Nuevo interruptor" maxlength="80" />
+    <button id="add" type="button">Añadir</button>
+  </div>
+
+  <footer class="footer">
+    <div class="backup">
+      <button id="export" type="button">Exportar</button>
+      <button id="import" type="button">Importar</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden />
+    </div>
+    <p class="credits">
+      ByeTOC · <a href="https://www.linkedin.com/in/palaciosjosealberto"
+                  target="_blank" rel="noopener noreferrer">José Alberto Palacios</a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
